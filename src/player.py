@@ -1,4 +1,7 @@
+# player.py
+
 import json
+import random
 
 class Player:
     def __init__(self, name, password="", access_code="", score=0):
@@ -18,6 +21,12 @@ class PlayerManager:
         player = Player(name, password, access_code, score)
         self.players.append(player)
         self.save_players()  # Salva jogadores após adicionar
+
+    def register_player(self, name, password):
+        """Registra um novo jogador e gera um código de acesso único."""
+        access_code = str(random.randint(1000, 9999))  # Gera um código de acesso aleatório
+        self.add_player(name, password, access_code)
+        return access_code
 
     def validate_login(self, access_code):
         """Valida se o código de acesso fornecido corresponde a algum jogador registrado."""
