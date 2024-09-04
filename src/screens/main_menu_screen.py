@@ -1,3 +1,5 @@
+# src/screens/main_menu_screen.py
+
 import pygame
 from ..ui import Button
 from ..constants import WHITE, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT_BOTTOM, BLACK
@@ -12,14 +14,21 @@ class MainMenuScreen:
         self.title_font = pygame.font.Font(None, 72)  # Usar um tamanho grande
         self.title_text = "Fora do Loop"
 
-        # Definição dos botões
+        # Definir o espaçamento vertical entre os botões e a posição inicial
+        self.button_width = 200
+        self.button_height = 50
+        self.button_spacing = 30  # Espaço entre os botões
+        self.total_button_height = (self.button_height + self.button_spacing) * 6  # 6 botões
+        self.start_y = (self.screen.get_height() - self.total_button_height) / 2  # Calcula a posição Y inicial para centralizar os botões
+
+        # Definição dos botões, ajustando a posição Y para centralizar
         self.buttons = [
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 - 100, 200, 50, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 - 30, 200, 50, "Editar Grupo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),  # Botão Editar Grupo
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 40, 200, 50, "Instruções", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 110, 200, 50, "Configurações", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 180, 200, 50, "Créditos", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
-            Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 250, 200, 50, "Sair", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y, self.button_width, self.button_height, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y + (self.button_height + self.button_spacing), self.button_width, self.button_height, "Editar Grupo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),  # Botão Editar Grupo
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y + 2 * (self.button_height + self.button_spacing), self.button_width, self.button_height, "Instruções", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y + 3 * (self.button_height + self.button_spacing), self.button_width, self.button_height, "Configurações", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y + 4 * (self.button_height + self.button_spacing), self.button_width, self.button_height, "Créditos", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25),
+            Button(self.screen.get_width() / 2 - self.button_width / 2, self.start_y + 5 * (self.button_height + self.button_spacing), self.button_width, self.button_height, "Sair", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         ]
 
     def draw(self):
@@ -64,9 +73,9 @@ class MainMenuScreen:
     def draw_title(self):
         """Desenha o título na parte superior da tela."""
         title_surface = self.title_font.render(self.title_text, True, WHITE)
-        title_rect = title_surface.get_rect(center=(self.screen.get_width() / 2, 150))  # Centraliza horizontalmente, movido mais para baixo
+        title_rect = title_surface.get_rect(center=(self.screen.get_width() / 2, 100))  # Centraliza horizontalmente, título mais alto
         shadow_surface = self.title_font.render(self.title_text, True, BLACK)  # Sombra
-        shadow_rect = shadow_surface.get_rect(center=(self.screen.get_width() / 2 + 3, 153))  # Leve deslocamento para sombra
+        shadow_rect = shadow_surface.get_rect(center=(self.screen.get_width() / 2 + 3, 103))  # Leve deslocamento para sombra
         self.screen.blit(shadow_surface, shadow_rect)  # Desenha a sombra
         self.screen.blit(title_surface, title_rect)  # Desenha o título
 
