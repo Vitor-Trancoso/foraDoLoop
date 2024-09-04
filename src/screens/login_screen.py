@@ -3,6 +3,7 @@
 import pygame
 from ..ui import Button
 from ..constants import WHITE, RED, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT_BOTTOM
+import time  # Import necessário para o cursor piscante
 
 class LoginScreen:
     def __init__(self, game):
@@ -21,6 +22,8 @@ class LoginScreen:
         self.register_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 90, 200, 50, "Registrar-se", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
 
         self.error_message = ""
+        self.cursor_visible = True  # Controle da visibilidade do cursor piscante
+        self.cursor_timer = time.time()  # Tempo do cursor piscante
 
     def draw(self):
         # Desenha o fundo com gradiente
@@ -35,6 +38,16 @@ class LoginScreen:
         self.input_box.w = width
         self.screen.blit(txt_surface, (self.input_box.x + 5, self.input_box.y + 5))
         pygame.draw.rect(self.screen, self.color, self.input_box, border_radius=15, width=2)
+
+        # Lógica para fazer o cursor piscar
+        if self.active:
+            if time.time() - self.cursor_timer > 0.5:  # Alterna a visibilidade a cada 0.5 segundos
+                self.cursor_visible = not self.cursor_visible
+                self.cursor_timer = time.time()
+
+            if self.cursor_visible:
+                cursor_pos = self.input_box.x + 5 + txt_surface.get_width()  # Posição do cursor no final do texto
+                pygame.draw.line(self.screen, WHITE, (cursor_pos, self.input_box.y + 5), (cursor_pos, self.input_box.y + 35), 2)
 
         # Desenha os botões de login e registro
         self.login_button.draw(self.screen)
