@@ -22,7 +22,7 @@ class Game:
         self.font = pygame.font.Font(None, 36)
         self.running = True
         self.categories = {
-            "Comidas": ["Pizza", "Hambúrguer", "Sushi", "Salada", "Sorvete", "Lasagna", "Batata Frita", "Tacos", "Macarrão",
+            "Comidas": ["Pizza", "Hambúrguere", "Sushi", "Salada", "Sorvete", "Lasagna", "Batata Frita", "Tacos", "Macarrão",
                         "Curry", "Panqueca", "Burrito", "Ramen", "Nhoque", "Frango Assado", "Hot Dog", "Cuscuz", "Bolo", 
                         "Sanduíche", "Croissant", "Queijo", "Arroz", "Feijão", "Camarão", "Torta", "Steak", "Brigadeiro", 
                         "Pão de Queijo", "Risoto", "Ceviche", "Yakissoba", "Churrasco", "Paella", "Tapioca", "Goulash", 
