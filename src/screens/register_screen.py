@@ -1,3 +1,5 @@
+# src/screens/register_screen.py
+
 import pygame
 from ..ui import Button
 from ..constants import WHITE, GRADIENT_TOP, GRADIENT_BOTTOM, MINT_GREEN, SKY_BLUE, BLUE_GRAY, BLACK
@@ -15,7 +17,7 @@ class RegisterScreen:
         self.password_box = pygame.Rect(self.screen.get_width() / 2 - 150, self.screen.get_height() / 2 + 10, 300, 40)
         self.register_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 80, 200, 50, "Registrar-se", self.font, BLUE_GRAY, BLACK, corner_radius=25)
         self.ok_button = Button(self.screen.get_width() / 2 - 75, self.screen.get_height() / 2 + 180, 150, 40, "Ok", self.font, MINT_GREEN, SKY_BLUE, corner_radius=15)
-        
+
         # Alterando a posição do botão "Voltar" para um pouco mais acima
         self.back_button = Button(self.screen.get_width() / 2 - 75, self.screen.get_height() / 2 + 180, 150, 40, "Voltar", self.font, BLUE_GRAY, BLACK, corner_radius=15)
 
@@ -26,8 +28,8 @@ class RegisterScreen:
         self.password = ''
         self.cursor_visible_nickname = True
         self.cursor_visible_password = True
-        self.cursor_timer_nickname = 0
-        self.cursor_timer_password = 0
+        self.cursor_timer_nickname = pygame.time.get_ticks()
+        self.cursor_timer_password = pygame.time.get_ticks()
         self.cursor_interval = 500
 
     def draw(self):
@@ -39,12 +41,22 @@ class RegisterScreen:
         # Desenha o input do nickname
         nickname_surf = self.font.render(self.nickname, True, WHITE)
         self.screen.blit(nickname_surf, (self.nickname_box.x + 5, self.nickname_box.y + 5))
-        pygame.draw.rect(self.screen, BLUE_GRAY if self.active_nickname else WHITE, self.nickname_box, border_radius=15, width=2)
+        pygame.draw.rect(self.screen, WHITE if self.active_nickname else BLUE_GRAY, self.nickname_box, border_radius=15, width=2)
+
+        # Desenha o cursor piscante na caixa de nickname
+        if self.active_nickname and self.cursor_visible_nickname:
+            cursor_pos = self.nickname_box.x + 5 + nickname_surf.get_width()
+            pygame.draw.line(self.screen, WHITE, (cursor_pos, self.nickname_box.y + 5), (cursor_pos, self.nickname_box.y + 35), 2)
 
         # Desenha o input da senha
         password_surf = self.font.render('*' * len(self.password), True, WHITE)
         self.screen.blit(password_surf, (self.password_box.x + 5, self.password_box.y + 5))
-        pygame.draw.rect(self.screen, BLUE_GRAY if self.active_password else WHITE, self.password_box, border_radius=15, width=2)
+        pygame.draw.rect(self.screen, WHITE if self.active_password else BLUE_GRAY, self.password_box, border_radius=15, width=2)
+
+        # Desenha o cursor piscante na caixa de senha
+        if self.active_password and self.cursor_visible_password:
+            cursor_pos = self.password_box.x + 5 + password_surf.get_width()
+            pygame.draw.line(self.screen, WHITE, (cursor_pos, self.password_box.y + 5), (cursor_pos, self.password_box.y + 35), 2)
 
         # Desenha botões
         self.register_button.draw(self.screen)
@@ -100,9 +112,12 @@ class RegisterScreen:
 
     def update(self):
         current_time = pygame.time.get_ticks()
+        # Alternar a visibilidade do cursor para nickname
         if current_time - self.cursor_timer_nickname > self.cursor_interval:
             self.cursor_timer_nickname = current_time
             self.cursor_visible_nickname = not self.cursor_visible_nickname
+        
+        # Alternar a visibilidade do cursor para senha
         if current_time - self.cursor_timer_password > self.cursor_interval:
             self.cursor_timer_password = current_time
             self.cursor_visible_password = not self.cursor_visible_password
