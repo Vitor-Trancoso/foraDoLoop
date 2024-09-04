@@ -22,9 +22,39 @@ class Game:
         self.font = pygame.font.Font(None, 36)
         self.running = True
         self.categories = {
-            "Comidas": ["Pizza", "Hambúrguer", "Sushi", "Salada", "Sorvete"],
-            "Filmes": ["Inception", "Titanic", "Avatar", "The Matrix", "Gladiator"],
-            "Animais": ["Elefante", "Tigre", "Golfinho", "Canguru", "Pinguim"]
+            "Comidas": ["Pizza", "Hambúrguer", "Sushi", "Salada", "Sorvete", "Lasagna", "Batata Frita", "Tacos", "Macarrão",
+                        "Curry", "Panqueca", "Burrito", "Ramen", "Nhoque", "Frango Assado", "Hot Dog", "Cuscuz", "Bolo", 
+                        "Sanduíche", "Croissant", "Queijo", "Arroz", "Feijão", "Camarão", "Torta", "Steak", "Brigadeiro", 
+                        "Pão de Queijo", "Risoto", "Ceviche", "Yakissoba", "Churrasco", "Paella", "Tapioca", "Goulash", 
+                        "Salmão", "Sopa", "Empadão", "Schnitzel", "Frango Frito", "Omelete", "Massa", "Polenta", "Pamonha",
+                        "Pastel", "Moqueca", "Quiche", "Escondidinho", "Vatapá", "Polvo", "Sardinha"],
+            "Filmes": ["Inception", "Titanic", "Avatar", "The Matrix", "Gladiator", "Forrest Gump", "O Poderoso Chefão",
+                        "Jurassic Park", "Star Wars", "The Dark Knight", "Pulp Fiction", "Os Vingadores", "Clube da Luta",
+                        "Toy Story", "De Volta para o Futuro", "O Senhor dos Anéis", "Harry Potter", "Indiana Jones", 
+                        "O Exorcista", "Psicose", "Rocky", "E.T.", "O Iluminado", "Coringa", "Logan", "Pantera Negra",
+                        "Mulher Maravilha", "Parasita", "A Origem", "O Rei Leão", "Braveheart", "O Grande Gatsby", 
+                        "Interstellar", "Mad Max", "O Lobo de Wall Street", "Moulin Rouge", "Cisne Negro", "Django Livre", 
+                        "Matrix Reloaded", "The Revenant", "The Departed", "12 Homens e uma Sentença", "Os Sete Samurais", 
+                        "Cidadão Kane", "A Lista de Schindler", "O Pianista", "Ratatouille", "V de Vingança", "Jogos Vorazes", "Frozen"],
+            "Animais": ["Elefante", "Tigre", "Golfinho", "Canguru", "Pinguim", "Leão", "Girafa", "Urso", "Zebra", "Cavalo",
+                        "Rinoceronte", "Hipopótamo", "Cervo", "Lobo", "Raposa", "Águia", "Coruja", "Jacaré", "Cobra", 
+                        "Tartaruga", "Sapo", "Panda", "Cachorro", "Gato", "Papagaio", "Leopardo", "Crocodilo",
+                        "Falcão", "Bicho Preguiça", "Guaxinim", "Macaco", "Vaca", "Porco", "Ovelha", "Pato", "Galinha",
+                        "Cisne", "Coelho", "Touro", "Tubarão", "Água-viva", "Caranguejo", "Baleia", "Orca", "Foca", 
+                        "Urso Polar", "Flamingo", "Peixe", "Aranha"],
+            "Países": ["Brasil", "Argentina", "Estados Unidos", "Canadá", "México", "Japão", "China", "Alemanha", "França", 
+                        "Itália", "Espanha", "Portugal", "Reino Unido", "Austrália", "Índia", "África do Sul", "Egito", 
+                        "Rússia", "Nova Zelândia", "Suécia", "Noruega", "Finlândia", "Dinamarca", "Holanda", "Bélgica", 
+                        "Suíça", "Áustria", "Turquia", "Grécia", "Israel", "Arábia Saudita", "Irã", "Iraque", "Coreia do Sul", 
+                        "Coreia do Norte", "Tailândia", "Filipinas", "Vietnã", "Indonésia", "Paquistão", "Afeganistão", 
+                        "Malásia", "Cingapura", "Ucrânia", "Polônia", "Hungria", "Cuba", "Venezuela", "Colômbia", "Chile", "Peru"],
+            "Esportes": ["Futebol", "Basquete", "Vôlei", "Tênis", "Golfe", "Rugby", "Críquete", "Beisebol", "Futebol Americano",
+                        "Handebol", "Atletismo", "Natação", "Boxe", "Ciclismo", "Ginástica", "Judô", "Taekwondo", "Karatê", 
+                        "Esgrima", "Hipismo", "Surfe", "Skate", "Snowboard", "Patinação no Gelo", "Esqui", "Luta Greco-Romana",
+                        "Levantamento de Peso", "Badminton", "Squash", "Tênis de Mesa", "Xadrez", "Arco e Flecha", "Tiro Esportivo",
+                        "Pentatlo Moderno", "Canoagem", "Remo", "Vela", "MMA", "Wrestling", "Basquete 3x3", "Hóquei no Gelo",
+                        "Hóquei de Campo", "Polo Aquático", "Mountain Bike", "Triatlo", "Kickboxing", "Curling", "Lacrosse",
+                        "Boliche", "Peteca"]
         }
         self.selected_category = None
         self.player_manager = PlayerManager()  # Carrega os jogadores no início
