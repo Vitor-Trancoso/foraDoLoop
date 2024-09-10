@@ -15,14 +15,18 @@ class GroupEditScreen:
         button_width = 200
         button_height = 50
         button_spacing = 20
-        total_button_height = (button_height + button_spacing) * 4
+        total_button_height = (button_height + button_spacing) * 5  # Adicionamos o botão de "Pronto"
         start_y = (self.screen.get_height() - total_button_height) / 2
 
         # Botões centralizados
         self.add_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y, button_width, button_height, "Adicionar Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         self.edit_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + (button_height + button_spacing), button_width, button_height, "Editar Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         self.remove_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 2 * (button_height + button_spacing), button_width, button_height, "Remover Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-        self.back_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Voltar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+        self.ready_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Pronto", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+        self.back_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 4 * (button_height + button_spacing), button_width, button_height, "Voltar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+
+        # Botão "Iniciar Jogo" que será exibido após clicar no botão "Pronto"
+        self.start_game_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
 
         # Campo de entrada para novo nome
         self.input_box = pygame.Rect(self.screen.get_width() / 2 - 150, 100, 300, 40)
@@ -36,6 +40,7 @@ class GroupEditScreen:
         # Estados de edição e remoção
         self.is_editing = False
         self.is_removing = False
+        self.players_ready = False  # Controla se os jogadores estão prontos para iniciar a partida
 
         # Controle para o cursor piscante
         self.cursor_visible = True
@@ -57,10 +62,16 @@ class GroupEditScreen:
             cursor_y = self.input_box.y + 5
             pygame.draw.rect(self.screen, BLACK, (cursor_x, cursor_y, 2, self.font.get_height()))
 
-        # Desenha botões
-        self.add_button.draw(self.screen)
-        self.edit_button.draw(self.screen)
-        self.remove_button.draw(self.screen)
+        # Desenha os botões (esconde o botão "Pronto" quando os jogadores estão prontos)
+        if not self.players_ready:
+            self.add_button.draw(self.screen)
+            self.edit_button.draw(self.screen)
+            self.remove_button.draw(self.screen)
+            self.ready_button.draw(self.screen)
+        else:
+            # Se os jogadores estiverem prontos, mostrar o botão "Iniciar Jogo"
+            self.start_game_button.draw(self.screen)
+
         self.back_button.draw(self.screen)
 
         # Exibe os jogadores convidados em formato de matriz 5x5
@@ -79,16 +90,23 @@ class GroupEditScreen:
                 self.active_input = False
                 self.input_color = self.input_color_inactive
 
-            if self.add_button.is_clicked(event):
-                self.add_player()
+            if not self.players_ready:
+                if self.add_button.is_clicked(event):
+                    self.add_player()
 
-            if self.edit_button.is_clicked(event):
-                self.is_editing = True
-                self.is_removing = False
+                if self.edit_button.is_clicked(event):
+                    self.is_editing = True
+                    self.is_removing = False
 
-            if self.remove_button.is_clicked(event):
-                self.is_removing = True
-                self.is_editing = False
+                if self.remove_button.is_clicked(event):
+                    self.is_removing = True
+                    self.is_editing = False
+
+                if self.ready_button.is_clicked(event):
+                    self.players_ready = True  # Sinaliza que os jogadores estão prontos
+
+            if self.start_game_button.is_clicked(event) and self.players_ready:
+                self.game.start_game()  # Inicia o jogo
 
             if self.back_button.is_clicked(event):
                 self.game.show_main_menu()

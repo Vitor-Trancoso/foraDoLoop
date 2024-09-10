@@ -1,5 +1,3 @@
-# player_setup_screen.py
-
 import pygame
 from ..ui import Button
 from ..constants import WHITE, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT_BOTTOM, RED
@@ -9,6 +7,9 @@ class PlayerSetupScreen:
         self.game = game
         self.screen = game.screen
         self.font = pygame.font.Font(None, 36)
+
+        # Lista temporária de jogadores para a partida
+        self.invited_players = []
 
         # Botão Voltar
         button_width = 200
@@ -28,8 +29,14 @@ class PlayerSetupScreen:
         # Botão "Adicionar Jogador"
         self.add_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 60, 200, 50, "Adicionar Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
 
-        # Botão "Iniciar Jogo"
+        # Botão "Pronto"
+        self.ready_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 130, 200, 50, "Pronto", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
+
+        # Botão "Iniciar Jogo" (exibido depois de clicar em "Pronto")
         self.start_game_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() / 2 + 130, 200, 50, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
+
+        # Controla se os jogadores estão prontos
+        self.players_ready = False
 
         # Mensagem de feedback
         self.feedback_message = ""
@@ -48,9 +55,14 @@ class PlayerSetupScreen:
         self.screen.blit(txt_surface, (self.input_box.x + 5, self.input_box.y + 5))
         pygame.draw.rect(self.screen, self.color, self.input_box, border_radius=15, width=2)
 
-        # Desenha os botões "Adicionar Jogador", "Iniciar Jogo" e "Voltar"
+        # Desenha botões
         self.add_button.draw(self.screen)
-        self.start_game_button.draw(self.screen)
+
+        if not self.players_ready:
+            self.ready_button.draw(self.screen)
+        else:
+            self.start_game_button.draw(self.screen)
+
         self.back_button.draw(self.screen)
 
         # Exibe mensagem de feedback, se houver
@@ -70,19 +82,23 @@ class PlayerSetupScreen:
                 self.active = False
                 self.color = self.color_inactive
 
-            if self.add_button.is_clicked(event):
-                if self.text:  # Verifica se há texto na caixa de entrada
-                    self.game.player_manager.add_player(self.text, "password", "0000")  # Lógica para adicionar o jogador
-                    self.feedback_message = f"Jogador '{self.text}' adicionado!"
-                    self.text = ''  # Limpa o texto após adicionar o jogador
-                else:
-                    self.feedback_message = "Nome do jogador não pode estar vazio."
+            if not self.players_ready:
+                if self.add_button.is_clicked(event):
+                    if self.text:
+                        self.invited_players.append(self.text)  # Adiciona à lista temporária
+                        self.feedback_message = f"Jogador '{self.text}' adicionado!"
+                        self.text = ''  # Limpa o texto após adicionar o jogador
+                    else:
+                        self.feedback_message = "Nome do jogador não pode estar vazio."
 
-            if self.start_game_button.is_clicked(event):
-                if len(self.game.player_manager.players) < 2:
-                    self.feedback_message = "Adicione pelo menos 2 jogadores para iniciar o jogo."
-                else:
-                    self.game.start_round()  # Chama o método para iniciar o jogo
+                if self.ready_button.is_clicked(event):
+                    if len(self.invited_players) < 2:
+                        self.feedback_message = "Adicione pelo menos 2 jogadores para iniciar o jogo."
+                    else:
+                        self.players_ready = True  # Define que os jogadores estão prontos
+
+            if self.start_game_button.is_clicked(event) and self.players_ready:
+                self.game.start_round()  # Chama o método para iniciar o jogo
 
             if self.back_button.is_clicked(event):
                 self.game.screen_manager.show_choose_theme()  # Volta para a tela de escolha de tema
@@ -91,7 +107,7 @@ class PlayerSetupScreen:
             if self.active:
                 if event.key == pygame.K_RETURN:
                     if self.text:
-                        self.game.player_manager.add_player(self.text, "password", "0000")  # Lógica para adicionar o jogador
+                        self.invited_players.append(self.text)  # Adiciona à lista temporária
                         self.feedback_message = f"Jogador '{self.text}' adicionado!"
                         self.text = ''
                     else:
