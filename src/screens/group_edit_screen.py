@@ -45,6 +45,7 @@ class GroupEditScreen:
         # Botão "Okay" (somente aparece ao adicionar, editar ou remover jogador)
         self.okay_button = None
         self.confirm_button = None  # Botão de confirmar edição/remocao
+        self.start_game_button = None  # Botão "Iniciar Jogo" aparece se houver jogadores suficientes
 
     def draw(self):
         self.draw_gradient_background(GRADIENT_TOP, GRADIENT_BOTTOM)
@@ -56,6 +57,13 @@ class GroupEditScreen:
             self.edit_button.draw(self.screen)
             self.remove_button.draw(self.screen)
             self.back_button.draw(self.screen)
+
+            # Desenha o botão "Iniciar Jogo" se houver mais de um jogador
+            if len(self.invited_players) > 1:
+                if not self.start_game_button:
+                    self.start_game_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() - 100, 200, 50, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+                self.start_game_button.draw(self.screen)
+
         elif self.is_adding:
             # Exibe campo de entrada para adicionar jogadores e o botão "Okay"
             self.draw_input_box()
@@ -94,6 +102,8 @@ class GroupEditScreen:
                     self.start_removing_player()
                 elif self.back_button.is_clicked(event):
                     self.game.show_main_menu()
+                elif self.start_game_button and self.start_game_button.is_clicked(event):
+                    self.game.show_choose_theme()
             elif self.is_adding:
                 if self.okay_button and self.okay_button.is_clicked(event):
                     self.finish_adding_player()
@@ -107,7 +117,11 @@ class GroupEditScreen:
                 if self.okay_button and self.okay_button.is_clicked(event):
                     self.finish_removing_player()
                 self.check_remove_click(event.pos)
-
+            elif self.start_game_button.is_clicked(event):
+                # Certifica-se de que há jogadores ativos
+                self.game.player_manager.active_players = self.invited_players[:]
+                self.game.show_choose_theme_screen()  # Vai para a tela de escolha de tema
+                
         elif event.type == pygame.KEYDOWN:
             if self.is_adding:
                 if event.key == pygame.K_RETURN:
@@ -263,6 +277,16 @@ class GroupEditScreen:
             cursor_y = input_box.y + 5
             pygame.draw.rect(self.screen, BLACK, (cursor_x, cursor_y, 2, self.font.get_height()))
 
+    def finish_adding_player(self):
+        """Finaliza a ação de adicionar jogador e volta para a tela com as opções."""
+        self.is_adding = False
+        self.message = "Escolha uma opção"
+        self.okay_button = None  # Remove o botão "Okay"
+
+        # Define os jogadores adicionados como jogadores ativos
+        self.game.player_manager.active_players = self.invited_players[:]  # Copia os jogadores convidados para a lista de jogadores ativos
+
+
     def draw_players_matrix(self):
         """Desenha os jogadores adicionados com hitboxes."""
         x_start = self.screen.get_width() / 10
@@ -273,15 +297,15 @@ class GroupEditScreen:
         hitbox_padding_y = 10
         border_radius = 15
         dark_blue = (0, 51, 102)
-    
+
         for i, player in enumerate(self.invited_players):
             # Calcula a posição X e Y de cada jogador
             x = x_start + (i % 5) * col_width
             y = y_start + (i // 5) * row_height
-            
+
             player_surface = self.font.render(player, True, WHITE)
             text_width, text_height = player_surface.get_size()
-    
+
             # Cria o retângulo da hitbox ao redor do nome do jogador
             player_rect = pygame.Rect(
                 x - hitbox_padding_x // 2,
@@ -289,17 +313,17 @@ class GroupEditScreen:
                 text_width + hitbox_padding_x,
                 text_height + hitbox_padding_y
             )
-    
+
             # Desenha a hitbox com a cor normal (azul escuro)
             pygame.draw.rect(self.screen, dark_blue, player_rect, width=2, border_radius=border_radius)
-    
+
             # Se o jogador estiver selecionado para edição, altera a cor da hitbox para vermelho
             if self.is_editing and player == self.selected_player:
                 pygame.draw.rect(self.screen, RED, player_rect, width=2, border_radius=border_radius)
-    
+
             # Desenha o nome do jogador dentro da hitbox
             self.screen.blit(player_surface, (player_rect.x + hitbox_padding_x // 2, player_rect.y + hitbox_padding_y // 2))
-    
+
 
     def check_select_click(self, pos):
         """Verifica se o jogador clicou no nome de um jogador para editar."""

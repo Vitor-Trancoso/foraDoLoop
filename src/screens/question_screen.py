@@ -1,4 +1,3 @@
-# question_screen.py
 import pygame
 import random
 from ..ui import Button
@@ -7,17 +6,33 @@ from ..constants import WHITE, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT
 class QuestionScreen:
     def __init__(self, game):
         self.game = game
-        self.screen = game.screen
-        self.font = game.font
+        self.screen = self.game.screen
+        self.font = self.game.font
         self.players = self.game.player_manager.active_players[:]  # Usando jogadores ativos
+        self.selected_object = self.game.selected_object  # Objeto do tema escolhido
         self.question_order = self.players[:]  # Garante que todos perguntem e respondam
         self.current_pair = None
         self.asked_pairs = []  # Mantém o controle de quem já perguntou e respondeu
 
+        # Escolhe um impostor aleatório
+        self.impostor = random.choice(self.players)
+        self.selected_object = self.game.selected_object  # Objeto do tema escolhido
+
         # Botão "Próximo" para avançar para a próxima pergunta
         self.next_button = Button(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 + 100, 100, 50, "Próximo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
 
+        # Mostra o impostor e o objeto aos jogadores
+        self.show_impostor_and_object()
+
         self.next_pair()  # Sorteia a primeira dupla de jogadores
+
+    def show_impostor_and_object(self):
+        # Exibe uma mensagem para cada jogador
+        for player in self.players:
+            if player == self.impostor:
+                player.message = "Você é o impostor!"
+            else:
+                player.message = f"O objeto é: {self.selected_object}"
 
     def next_pair(self):
         # Se não houver jogadores suficientes ou todos já perguntaram e responderam

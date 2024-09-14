@@ -3,6 +3,7 @@ from .player import PlayerManager
 from .ui import Button
 from .screen_manager import ScreenManager
 from .admin import Admin
+from .screens.question_screen import QuestionScreen
 
 # Definir cores
 WHITE = (255, 255, 255)
@@ -58,6 +59,7 @@ class Game:
                         "Boliche", "Peteca"]
         }
         self.selected_category = None
+        self.selected_object = None 
         self.player_manager = PlayerManager()
         self.player_manager.active_players = self.players[:]  # Carrega os jogadores no início
         self.current_player = None
@@ -160,3 +162,19 @@ class Game:
     def show_choose_theme(self):
         """Função que navega para a tela de escolha de temas."""
         self.screen_manager.show_choose_theme_screen()
+
+    def show_question_screen(self, players=None):
+        """Mostra a tela de perguntas entre os jogadores."""
+        if not players:
+            players = self.player_manager.active_players  # Use os jogadores ativos se a lista não for fornecida
+
+        if not players:
+            print("Erro: Nenhum jogador ativo disponível.")
+            return
+
+        # Garante que há pelo menos dois jogadores
+        if len(players) < 2:
+            print("Erro: É necessário pelo menos dois jogadores.")
+            return
+
+        self.screen_manager.current_screen = QuestionScreen(self)

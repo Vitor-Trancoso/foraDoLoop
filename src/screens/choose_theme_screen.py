@@ -1,7 +1,7 @@
-#choose_theme_screen.py
 import pygame
 from ..ui import Button
 from ..constants import WHITE, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT_BOTTOM
+import random
 
 class ChooseThemeScreen:
     def __init__(self, game):
@@ -55,10 +55,17 @@ class ChooseThemeScreen:
             for button, theme in zip(self.buttons, self.themes):
                 if button.is_clicked(event):
                     self.game.selected_category = theme  # Salva a categoria selecionada
-                    print(f"Categoria {theme} selecionada.")
-                    self.game.show_player_words(self.game.player_manager.active_players)  # Mostrar as palavras e o impostor após escolher o tema
+                    
+                    # Sorteia um objeto do tema selecionado
+                    self.game.selected_object = random.choice(self.game.categories[theme])
+                    print(f"Tema {theme} e objeto {self.game.selected_object} selecionados.")
+                    
+                    # Vai para a tela de perguntas
+                    self.game.show_question_screen(self.game.player_manager.active_players)
+                    
             if self.back_button.is_clicked(event):
                 self.game.show_main_menu()
+
 
     def update(self):
         pass  # Método update vazio
