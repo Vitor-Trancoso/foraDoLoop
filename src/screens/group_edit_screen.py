@@ -17,6 +17,7 @@ class GroupEditScreen:
         # Estado de controle
         self.is_adding = False
         self.is_editing = False
+        self.is_removing = False
         self.selected_player = None
 
         # Configurações de botões e outros elementos
@@ -41,16 +42,16 @@ class GroupEditScreen:
         self.remove_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 2 * (button_height + button_spacing), button_width, button_height, "Remover Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         self.back_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Voltar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
 
-        # Botão "Okay" (somente aparece ao adicionar ou editar jogador)
+        # Botão "Okay" (somente aparece ao adicionar, editar ou remover jogador)
         self.okay_button = None
-        self.confirm_button = None  # Botão de confirmar edição
+        self.confirm_button = None  # Botão de confirmar edição/remocao
 
     def draw(self):
         self.draw_gradient_background(GRADIENT_TOP, GRADIENT_BOTTOM)
         self.game.draw_text(self.message, self.screen.get_width() / 2, 50, font_size=42, color=WHITE)
 
-        if not self.is_adding and not self.is_editing:
-            # Desenha os botões quando não está adicionando ou editando jogador
+        if not self.is_adding and not self.is_editing and not self.is_removing:
+            # Desenha os botões quando não está adicionando, editando ou removendo jogador
             self.add_button.draw(self.screen)
             self.edit_button.draw(self.screen)
             self.remove_button.draw(self.screen)
@@ -67,9 +68,15 @@ class GroupEditScreen:
                 self.confirm_button.draw(self.screen)
             if self.okay_button:
                 self.okay_button.draw(self.screen)
+        elif self.is_removing:
+            # Exibe os jogadores para remoção com o botão "X" ao lado
+            self.draw_players_matrix_for_removal()
+            if self.okay_button:
+                self.okay_button.draw(self.screen)
 
-        # Exibe a lista de jogadores adicionados
-        self.draw_players_matrix()
+        # Exibe a lista de jogadores adicionados (em qualquer funcionalidade)
+        if not self.is_removing:
+            self.draw_players_matrix()
 
         pygame.display.flip()
 
@@ -77,8 +84,8 @@ class GroupEditScreen:
         if event.type == pygame.QUIT:
             self.game.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if not self.is_adding and not self.is_editing:
-                # Ações quando não está adicionando nem editando jogador
+            if not self.is_adding and not self.is_editing and not self.is_removing:
+                # Ações quando não está adicionando, editando ou removendo jogador
                 if self.add_button.is_clicked(event):
                     self.start_adding_player()
                 elif self.edit_button.is_clicked(event):
@@ -95,24 +102,25 @@ class GroupEditScreen:
                     self.confirm_editing_player()
                 if self.okay_button and self.okay_button.is_clicked(event):
                     self.finish_editing_player()
-                # Verifica se clicou em um jogador para editar
                 self.check_select_click(event.pos)
+            elif self.is_removing:
+                if self.okay_button and self.okay_button.is_clicked(event):
+                    self.finish_removing_player()
+                self.check_remove_click(event.pos)
 
-        elif event.type == pygame.KEYDOWN and self.is_adding:
-            # Lógica de digitação no campo de entrada (para adicionar)
-            if event.key == pygame.K_RETURN:
-                self.add_player()
-            elif event.key == pygame.K_BACKSPACE:
-                self.new_name = self.new_name[:-1]
-            else:
-                self.new_name += event.unicode
-
-        elif event.type == pygame.KEYDOWN and self.is_editing:
-            # Lógica de digitação no campo de entrada (para editar)
-            if event.key == pygame.K_BACKSPACE:
-                self.new_name = self.new_name[:-1]
-            else:
-                self.new_name += event.unicode
+        elif event.type == pygame.KEYDOWN:
+            if self.is_adding:
+                if event.key == pygame.K_RETURN:
+                    self.add_player()
+                elif event.key == pygame.K_BACKSPACE:
+                    self.new_name = self.new_name[:-1]
+                else:
+                    self.new_name += event.unicode
+            elif self.is_editing:
+                if event.key == pygame.K_BACKSPACE:
+                    self.new_name = self.new_name[:-1]
+                else:
+                    self.new_name += event.unicode
 
     def start_adding_player(self):
         """Inicia a ação de adicionar um jogador."""
@@ -138,14 +146,8 @@ class GroupEditScreen:
         self.is_editing = True
         self.message = "Editar Jogador"
         self.new_name = ""
-        self.okay_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() - 100, 200, 50, "Okay", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-
-    def finish_editing_player(self):
-        """Finaliza a ação de editar jogador e volta para a tela com as opções."""
-        self.is_editing = False
-        self.message = "Escolha uma opção"  # Restaura a mensagem padrão
-        self.okay_button = None  # Remove o botão "Okay"
-        self.selected_player = None  # Limpa o jogador selecionado
+        self.confirm_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() - 100, 200, 50, "Confirmar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+        self.okay_button = None
 
     def confirm_editing_player(self):
         """Confirma a edição de um jogador selecionado."""
@@ -154,7 +156,99 @@ class GroupEditScreen:
             self.invited_players[player_index] = self.new_name.strip()
             self.new_name = ""  # Limpa o campo de entrada
             self.selected_player = None  # Reseta a seleção
-            self.confirm_button = None  # Remove o botão de confirmação
+
+            # Remove o botão Confirmar e exibe o botão Okay
+            self.confirm_button = None
+            self.okay_button = Button(
+                self.screen.get_width() / 2 - 100, 
+                self.screen.get_height() - 100, 
+                200, 50, 
+                "Okay", 
+                self.font, 
+                BLUE_GRAY, 
+                DARK_BLUE_GRAY, 
+                corner_radius=25
+            )
+
+
+    def finish_editing_player(self):
+        """Finaliza a ação de editar jogador e volta para a tela com as opções."""
+        self.is_editing = False
+        self.message = "Escolha uma opção"  # Restaura a mensagem padrão
+        self.okay_button = None  # Remove o botão "Okay"
+        self.selected_player = None  # Limpa o jogador selecionado
+
+    def start_removing_player(self):
+        """Inicia a ação de remover um jogador."""
+        self.is_removing = True
+        self.message = "Remover Jogador"
+        self.okay_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() - 100, 200, 50, "Okay", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+
+    def finish_removing_player(self):
+        """Finaliza a ação de remover jogador e volta para a tela com as opções."""
+        self.is_removing = False
+        self.message = "Escolha uma opção"
+        self.okay_button = None
+
+    def check_remove_click(self, pos):
+        """Verifica se o jogador clicou no 'X' para remover um jogador."""
+        x_start = self.screen.get_width() / 10
+        y_start = 200
+        row_height = 50
+        col_width = self.screen.get_width() / 5
+        for i, player in enumerate(self.invited_players):
+            x = x_start + (i % 5) * col_width
+            y = y_start + (i // 5) * row_height
+            player_surface = self.font.render(player, True, WHITE)
+            text_width, text_height = player_surface.get_size()
+
+            player_rect = pygame.Rect(
+                x - 20 // 2,
+                y - 10 // 2,
+                text_width + 20,
+                text_height + 10
+            )
+
+            # Posição do "X"
+            remove_x_pos = x + text_width + 20
+            remove_rect = pygame.Rect(remove_x_pos, y, 20, 20)
+
+            # Verifica clique no "X"
+            if remove_rect.collidepoint(pos):
+                self.invited_players.remove(player)
+                break
+
+    def draw_players_matrix_for_removal(self):
+        """Desenha os jogadores com um 'X' para remoção."""
+        x_start = self.screen.get_width() / 10
+        y_start = 200
+        row_height = 50
+        col_width = self.screen.get_width() / 5
+        hitbox_padding_x = 20
+        hitbox_padding_y = 10
+        border_radius = 15
+        dark_blue = (0, 51, 102)
+
+        for i, player in enumerate(self.invited_players):
+            x = x_start + (i % 5) * col_width
+            y = y_start + (i // 5) * row_height
+            player_surface = self.font.render(player, True, WHITE)
+            text_width, text_height = player_surface.get_size()
+
+            # Desenha hitbox ao redor do nome
+            player_rect = pygame.Rect(
+                x - hitbox_padding_x // 2,
+                y - hitbox_padding_y // 2,
+                text_width + hitbox_padding_x,
+                text_height + hitbox_padding_y
+            )
+            pygame.draw.rect(self.screen, dark_blue, player_rect, width=2, border_radius=border_radius)
+            self.screen.blit(player_surface, (player_rect.x + hitbox_padding_x // 2, player_rect.y + hitbox_padding_y // 2))
+
+            # Desenha o "X" ao lado do nome
+            remove_x_pos = x + text_width + hitbox_padding_x
+            remove_surface = self.font.render("X", True, RED)
+            self.screen.blit(remove_surface, (remove_x_pos, y))
 
     def draw_input_box(self):
         """Desenha a caixa de entrada de texto com cursor piscante."""
@@ -179,42 +273,33 @@ class GroupEditScreen:
         hitbox_padding_y = 10
         border_radius = 15
         dark_blue = (0, 51, 102)
-
+    
         for i, player in enumerate(self.invited_players):
+            # Calcula a posição X e Y de cada jogador
             x = x_start + (i % 5) * col_width
             y = y_start + (i // 5) * row_height
+            
             player_surface = self.font.render(player, True, WHITE)
             text_width, text_height = player_surface.get_size()
-
+    
+            # Cria o retângulo da hitbox ao redor do nome do jogador
             player_rect = pygame.Rect(
                 x - hitbox_padding_x // 2,
                 y - hitbox_padding_y // 2,
                 text_width + hitbox_padding_x,
                 text_height + hitbox_padding_y
             )
-
+    
+            # Desenha a hitbox com a cor normal (azul escuro)
             pygame.draw.rect(self.screen, dark_blue, player_rect, width=2, border_radius=border_radius)
+    
+            # Se o jogador estiver selecionado para edição, altera a cor da hitbox para vermelho
+            if self.is_editing and player == self.selected_player:
+                pygame.draw.rect(self.screen, RED, player_rect, width=2, border_radius=border_radius)
+    
+            # Desenha o nome do jogador dentro da hitbox
             self.screen.blit(player_surface, (player_rect.x + hitbox_padding_x // 2, player_rect.y + hitbox_padding_y // 2))
-
-            # Quando em modo de edição, permite selecionar jogador
-            if self.is_editing:
-                if player_rect.collidepoint(pygame.mouse.get_pos()):
-                    pygame.draw.rect(self.screen, RED, player_rect, width=2, border_radius=border_radius)
-
-    def draw_edit_buttons(self):
-        """Desenha os botões de confirmar e OK, com espaçamento correto."""
-        if self.is_editing:
-            confirm_button_y = self.screen.get_height() - 150
-            okay_button_y = confirm_button_y + 60  # Adiciona espaçamento de 60px entre os botões
-            
-            # Desenha o botão Confirmar
-            self.confirm_button = Button(self.screen.get_width() / 2 - 100, confirm_button_y, 200, 50, "Confirmar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-            self.confirm_button.draw(self.screen)
-            
-            # Desenha o botão Okay
-            self.okay_button = Button(self.screen.get_width() / 2 - 100, okay_button_y, 200, 50, "Okay", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-            self.okay_button.draw(self.screen)
-
+    
 
     def check_select_click(self, pos):
         """Verifica se o jogador clicou no nome de um jogador para editar."""
