@@ -1,5 +1,3 @@
-# choose_theme_screen.py
-
 import pygame
 from ..ui import Button
 from ..constants import WHITE, BLUE_GRAY, DARK_BLUE_GRAY, GRADIENT_TOP, GRADIENT_BOTTOM
@@ -52,12 +50,14 @@ class ChooseThemeScreen:
         if event.type == pygame.QUIT:
             self.game.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.back_button.is_clicked(event):
-                self.game.screen_manager.show_main_menu()
-            for button in self.buttons:
+            # Itera sobre os botões de temas e verifica qual foi clicado
+            for button, theme in zip(self.buttons, self.themes):
                 if button.is_clicked(event):
-                    self.game.selected_category = button.text
-                    self.game.screen_manager.show_player_setup()
+                    self.game.selected_category = theme  # Salva a categoria selecionada
+                    print(f"Categoria {theme} selecionada.")
+                    self.game.show_player_words(self.game.player_manager.active_players)  # Mostrar as palavras e o impostor após escolher o tema
+            if self.back_button.is_clicked(event):
+                self.game.show_main_menu()
 
     def update(self):
         pass  # Método update vazio

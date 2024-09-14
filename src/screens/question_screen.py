@@ -1,5 +1,3 @@
-# src/screens/question_screen.py
-
 import pygame
 import random
 from ..ui import Button
@@ -11,26 +9,35 @@ class QuestionScreen:
         self.screen = game.screen
         self.font = game.font
         self.players = self.game.player_manager.active_players[:]  # Usando jogadores ativos
+        self.question_order = self.players[:]  # Garante que todos perguntem e respondam
         self.current_pair = None
+        self.asked_pairs = []  # Mantém o controle de quem já perguntou e respondeu
 
-        # Botão "Ok" para confirmar e avançar para a próxima pergunta
-        self.ok_button = Button(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 + 100, 100, 50, "Ok", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
+        # Botão "Próximo" para avançar para a próxima pergunta
+        self.next_button = Button(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 + 100, 100, 50, "Próximo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=15)
 
-        # Sorteia a primeira dupla de jogadores
-        self.next_pair()
+        self.next_pair()  # Sorteia a primeira dupla de jogadores
 
     def next_pair(self):
-        # Se não houver jogadores suficientes, avançar para a votação
-        if len(self.players) < 2:
+        # Se não houver jogadores suficientes ou todos já perguntaram e responderam
+        if len(self.question_order) < 2:
             self.game.show_voting_screen()
             return
 
-        # Sorteia dois jogadores diferentes
-        player1, player2 = random.sample(self.players, 2)
+        # Sorteia o próximo par de jogadores que ainda não perguntaram e responderam
+        while True:
+            player1, player2 = random.sample(self.question_order, 2)
 
-        # Remove a dupla sorteada da lista para evitar repetição
-        self.players.remove(player1)
-        self.players.remove(player2)
+            # Verifica se esse par já foi usado (evita repetição)
+            if (player1, player2) not in self.asked_pairs and (player2, player1) not in self.asked_pairs:
+                break
+
+        # Armazena o par atual que já fez uma pergunta
+        self.asked_pairs.append((player1, player2))
+
+        # Remove os jogadores da ordem para garantir que todos participem
+        self.question_order.remove(player1)
+        self.question_order.remove(player2)
 
         # Define o par atual
         self.current_pair = (player1, player2)
@@ -43,18 +50,18 @@ class QuestionScreen:
             question_text = f"{self.current_pair[0].name} pergunta para {self.current_pair[1].name}"
             self.game.draw_text(question_text, self.screen.get_width() / 2, self.screen.get_height() / 2 - 50, font_size=36)
 
-        self.ok_button.draw(self.screen)
+        self.next_button.draw(self.screen)
         pygame.display.flip()
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             self.game.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.ok_button.is_clicked(event):
-                if len(self.players) >= 2:
+            if self.next_button.is_clicked(event):
+                if len(self.question_order) >= 2:
                     self.next_pair()  # Avança para a próxima dupla de jogadores
                 else:
-                    self.game.show_voting_screen()  # Quando todas as perguntas forem feitas, avança para a votação
+                    self.game.show_voting_screen()  # Quando todos já perguntaram e responderam, avança para a votação
 
     def update(self):
         pass

@@ -6,10 +6,10 @@ from .screens.instructions_screen import InstructionsScreen
 from .screens.settings_screen import SettingsScreen
 from .screens.credits_screen import CreditsScreen
 from .screens.choose_theme_screen import ChooseThemeScreen
-from .screens.player_setup_screen import PlayerSetupScreen
 from .screens.group_edit_screen import GroupEditScreen  # Tela de edição de grupo
 from .screens.question_screen import QuestionScreen
 from .screens.voting_screen import VotingScreen
+from .screens.player_word_screen import PlayerWordScreen
 
 class ScreenManager:
     def __init__(self, game):
@@ -36,14 +36,15 @@ class ScreenManager:
     def show_credits(self):
         self.current_screen = CreditsScreen(self.game)
 
-    def show_choose_theme(self):
+    def show_choose_theme_screen(self):
         self.current_screen = ChooseThemeScreen(self.game)
 
-    def show_player_setup(self):
-        self.current_screen = PlayerSetupScreen(self.game)
-    
+    def show_player_word_screen(self, players):
+        self.current_screen = PlayerWordScreen(self.game, players)
+
+
     def show_group_edit_screen(self):
-        self.current_screen = GroupEditScreen(self.game)  # Mostra a tela de edição de grupo
+        self.current_screen = GroupEditScreen(self.game)
 
     def show_question_screen(self):
         self.current_screen = QuestionScreen(self.game)

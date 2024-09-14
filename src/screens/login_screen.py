@@ -9,7 +9,7 @@ class LoginScreen:
     def __init__(self, game):
         self.game = game
         self.screen = game.screen
-        self.font = game.font
+        self.font = self.game.font
 
         self.input_box = pygame.Rect(self.screen.get_width() / 2 - 150, self.screen.get_height() / 2 - 55, 300, 40)
         self.active = False
@@ -71,11 +71,7 @@ class LoginScreen:
                 self.color = self.color_inactive
 
             if self.login_button.is_clicked(event):
-                if not self.game.player_manager.validate_login(self.text):
-                    self.error_message = "Código inválido! Digite um código válido ou registre-se."
-                else:
-                    self.error_message = ""  # Limpar mensagem de erro ao fazer login com sucesso
-                    self.game.screen_manager.show_main_menu()
+                self.attempt_login()
 
             if self.register_button.is_clicked(event):
                 self.game.screen_manager.show_register_screen()
@@ -83,15 +79,19 @@ class LoginScreen:
         elif event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    if not self.game.player_manager.validate_login(self.text):
-                        self.error_message = "Código inválido! Digite um código válido ou registre-se."
-                    else:
-                        self.error_message = ""  # Limpar mensagem de erro ao fazer login com sucesso
-                        self.game.screen_manager.show_main_menu()
+                    self.attempt_login()  # Tentativa de login ao pressionar Enter
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+
+    def attempt_login(self):
+        """Verifica se o login é válido e exibe mensagem de erro, se necessário."""
+        if not self.game.player_manager.validate_login(self.text):
+            self.error_message = "Código inválido! Digite um código válido ou registre-se."
+        else:
+            self.error_message = ""  # Limpar mensagem de erro ao fazer login com sucesso
+            self.game.screen_manager.show_main_menu()
 
     def display_error_message(self):
         # Renderiza o texto do erro
@@ -101,7 +101,6 @@ class LoginScreen:
         self.screen.blit(text_surface, text_rect)
 
     def update(self):
-        # Método update vazio, pode ser preenchido conforme necessário
         pass
 
     def draw_gradient_background(self, color_top, color_bottom):
@@ -114,3 +113,4 @@ class LoginScreen:
                 int(color_top[2] * (1 - ratio) + color_bottom[2] * ratio)
             )
             pygame.draw.line(self.screen, color, (0, y), (self.screen.get_width(), y))
+
