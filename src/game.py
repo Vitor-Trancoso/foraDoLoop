@@ -21,8 +21,9 @@ class Game:
         pygame.display.set_caption("Out of the Loop")
         self.font = pygame.font.Font(None, 36)
         self.running = True
+        self.players = []  # Lista de jogadores adicionados
         self.categories = {
-            "Comidas": ["Pizza", "Hambúrguere", "Sushi", "Salada", "Sorvete", "Lasagna", "Batata Frita", "Tacos", "Macarrão",
+            "Comidas": ["Pizza", "Hambúrguer", "Sushi", "Salada", "Sorvete", "Lasagna", "Batata Frita", "Tacos", "Macarrão",
                         "Curry", "Panqueca", "Burrito", "Ramen", "Nhoque", "Frango Assado", "Hot Dog", "Cuscuz", "Bolo", 
                         "Sanduíche", "Croissant", "Queijo", "Arroz", "Feijão", "Camarão", "Torta", "Steak", "Brigadeiro", 
                         "Pão de Queijo", "Risoto", "Ceviche", "Yakissoba", "Churrasco", "Paella", "Tapioca", "Goulash", 
@@ -57,7 +58,8 @@ class Game:
                         "Boliche", "Peteca"]
         }
         self.selected_category = None
-        self.player_manager = PlayerManager()  # Carrega os jogadores no início
+        self.player_manager = PlayerManager()
+        self.player_manager.active_players = self.players[:]  # Carrega os jogadores no início
         self.current_player = None
         self.questions_asked = set()
         self.current_question = None
@@ -105,17 +107,21 @@ class Game:
         self.screen_manager.show_register_screen()
 
     def start_game(self):
-        self.screen_manager.show_choose_theme()
+        if self.selected_category is None:
+            self.screen_manager.show_choose_theme_screen()
+        else:
+            self.screen_manager.show_player_word_screen(self.player_manager.active_players)
 
-    def player_setup(self):
-        self.screen_manager.show_player_setup()
+    def show_player_words(self, players):
+        if players:
+            self.screen_manager.show_player_word_screen(players)
+        else:
+            print("Nenhum jogador foi adicionado.")
+
 
     def start_round(self):
         self.player_manager.reset_active_players()  # Reseta a lista de jogadores ativos antes de começar uma nova rodada
         self.screen_manager.show_question_screen()
-
-    def show_player_words(self, players):
-        self.screen_manager.show_player_words(players)
 
     def ask_question(self):
         self.screen_manager.ask_question()
@@ -150,3 +156,7 @@ class Game:
 
     def load_players(self):
         self.player_manager.load_players()
+
+    def show_choose_theme(self):
+        """Função que navega para a tela de escolha de temas."""
+        self.screen_manager.show_choose_theme_screen()

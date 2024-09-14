@@ -15,67 +15,59 @@ class GroupEditScreen:
         button_width = 200
         button_height = 50
         button_spacing = 20
-        total_button_height = (button_height + button_spacing) * 5  # Adicionamos o botão de "Pronto"
+        total_button_height = (button_height + button_spacing) * 4
         start_y = (self.screen.get_height() - total_button_height) / 2
 
-        # Botões centralizados
+        # Botões centrais
         self.add_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y, button_width, button_height, "Adicionar Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         self.edit_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + (button_height + button_spacing), button_width, button_height, "Editar Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
         self.remove_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 2 * (button_height + button_spacing), button_width, button_height, "Remover Jogador", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-        self.ready_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Pronto", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
-        self.back_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 4 * (button_height + button_spacing), button_width, button_height, "Voltar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+        self.back_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Voltar", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
 
-        # Botão "Iniciar Jogo" que será exibido após clicar no botão "Pronto"
-        self.start_game_button = Button(self.screen.get_width() / 2 - button_width / 2, start_y + 3 * (button_height + button_spacing), button_width, button_height, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+        # Botão "Iniciar Jogo"
+        self.start_game_button = None  # Só será mostrado quando jogadores forem adicionados
 
         # Campo de entrada para novo nome
         self.input_box = pygame.Rect(self.screen.get_width() / 2 - 150, 100, 300, 40)
         self.active_input = True
         self.input_color_inactive = BLUE_GRAY
         self.input_color_active = WHITE
-        self.input_color = self.input_color_active
+        self.input_color = self.input_color_inactive
         self.new_name = ''
         self.selected_player = None
 
-        # Estados de edição e remoção
+        # Estados de controle
         self.is_editing = False
         self.is_removing = False
-        self.players_ready = False  # Controla se os jogadores estão prontos para iniciar a partida
+        self.is_adding = True  # Começa no modo de adição de jogadores
 
-        # Controle para o cursor piscante
+        # Controle do cursor piscante
         self.cursor_visible = True
         self.cursor_timer = pygame.time.get_ticks()
         self.cursor_blink_speed = 500  # Intervalo de piscar do cursor (milissegundos)
 
     def draw(self):
         self.draw_gradient_background(GRADIENT_TOP, GRADIENT_BOTTOM)
-        self.game.draw_text('Editar Grupo', self.screen.get_width() / 2, 50, font_size=42, color=WHITE)
+        self.game.draw_text('Gerenciar Jogadores', self.screen.get_width() / 2, 50, font_size=42, color=WHITE)
 
-        # Desenha campo de entrada (sempre disponível para adicionar novos jogadores)
-        txt_surface = self.font.render(self.new_name, True, BLACK)
-        self.screen.blit(txt_surface, (self.input_box.x + 5, self.input_box.y + 5))
-        pygame.draw.rect(self.screen, self.input_color, self.input_box, border_radius=15, width=2)
+        # Renderiza o campo de entrada e o cursor piscante
+        self.draw_input_box()
 
-        # Desenha cursor piscante no campo de entrada
-        if self.cursor_visible:
-            cursor_x = self.input_box.x + txt_surface.get_width() + 5
-            cursor_y = self.input_box.y + 5
-            pygame.draw.rect(self.screen, BLACK, (cursor_x, cursor_y, 2, self.font.get_height()))
-
-        # Desenha os botões (esconde o botão "Pronto" quando os jogadores estão prontos)
-        if not self.players_ready:
-            self.add_button.draw(self.screen)
-            self.edit_button.draw(self.screen)
-            self.remove_button.draw(self.screen)
-            self.ready_button.draw(self.screen)
-        else:
-            # Se os jogadores estiverem prontos, mostrar o botão "Iniciar Jogo"
-            self.start_game_button.draw(self.screen)
-
+        # Desenha botões
+        self.add_button.draw(self.screen)
+        self.edit_button.draw(self.screen)
+        self.remove_button.draw(self.screen)
         self.back_button.draw(self.screen)
 
         # Exibe os jogadores convidados em formato de matriz 5x5
         self.draw_players_matrix()
+
+        # Se houver jogadores, desenha o botão "Iniciar Jogo"
+        if len(self.invited_players) > 0:
+            if not self.start_game_button:
+                # Inicializa o botão "Iniciar Jogo" quando há jogadores
+                self.start_game_button = Button(self.screen.get_width() / 2 - 100, self.screen.get_height() - 100, 200, 50, "Iniciar Jogo", self.font, BLUE_GRAY, DARK_BLUE_GRAY, corner_radius=25)
+            self.start_game_button.draw(self.screen)
 
         pygame.display.flip()
 
@@ -90,62 +82,96 @@ class GroupEditScreen:
                 self.active_input = False
                 self.input_color = self.input_color_inactive
 
-            if not self.players_ready:
-                if self.add_button.is_clicked(event):
-                    self.add_player()
+            if self.add_button.is_clicked(event):
+                self.activate_add_mode()
 
-                if self.edit_button.is_clicked(event):
-                    self.is_editing = True
-                    self.is_removing = False
+            if self.edit_button.is_clicked(event):
+                self.activate_edit_mode()
 
-                if self.remove_button.is_clicked(event):
-                    self.is_removing = True
-                    self.is_editing = False
-
-                if self.ready_button.is_clicked(event):
-                    self.players_ready = True  # Sinaliza que os jogadores estão prontos
-
-            if self.start_game_button.is_clicked(event) and self.players_ready:
-                self.game.start_game()  # Inicia o jogo
+            if self.remove_button.is_clicked(event):
+                self.activate_remove_mode()
 
             if self.back_button.is_clicked(event):
                 self.game.show_main_menu()
+
+            if self.start_game_button and self.start_game_button.is_clicked(event):
+                self.start_game()
 
             # Detecta clique no "X" ao remover jogador
             if self.is_removing:
                 self.check_remove_click(event.pos)
 
-            # Seleciona um jogador ao clicar em seu nome para editar
+            # Detecta clique no nome para editar
             if self.is_editing:
                 self.check_select_click(event.pos)
 
         elif event.type == pygame.KEYDOWN:
             if self.active_input:
                 if event.key == pygame.K_RETURN:
-                    self.add_player()
+                    if self.is_adding:
+                        self.add_player()
+                    elif self.is_editing:
+                        self.edit_player()
                 elif event.key == pygame.K_BACKSPACE:
                     self.new_name = self.new_name[:-1]
                 else:
                     self.new_name += event.unicode
 
+    def activate_add_mode(self):
+        """Ativa o modo de adição de jogadores."""
+        self.is_adding = True
+        self.is_editing = False
+        self.is_removing = False
+        self.new_name = ""  # Limpa o campo para nova entrada
+
+    def activate_edit_mode(self):
+        """Ativa o modo de edição de jogadores."""
+        self.is_editing = True
+        self.is_adding = False
+        self.is_removing = False
+
+    def activate_remove_mode(self):
+        """Ativa o modo de remoção de jogadores."""
+        self.is_removing = True
+        self.is_editing = False
+        self.is_adding = False
+
+    def draw_input_box(self):
+        """Desenha o campo de entrada de nome com o cursor piscante."""
+        txt_surface = self.font.render(self.new_name, True, BLACK)
+        self.screen.blit(txt_surface, (self.input_box.x + 5, self.input_box.y + 5))
+        pygame.draw.rect(self.screen, self.input_color, self.input_box, border_radius=15, width=2)
+
+        # Desenha cursor piscante
+        if self.cursor_visible:
+            cursor_x = self.input_box.x + txt_surface.get_width() + 5
+            cursor_y = self.input_box.y + 5
+            pygame.draw.rect(self.screen, BLACK, (cursor_x, cursor_y, 2, self.font.get_height()))
+
     def add_player(self):
         """Adiciona um jogador à lista temporária de convidados."""
-        if self.new_name.strip():
+        if self.new_name.strip():  # Certifica-se de que o nome não está vazio
             new_player_name = self.new_name.strip()
-            self.invited_players.append(new_player_name)  # Adiciona à lista de jogadores temporários
+            self.invited_players.append(new_player_name)  # Adiciona o jogador à lista
             self.new_name = ''  # Limpa o campo de entrada
+        else:
+            print("Nome do jogador não pode estar vazio.")
 
     def edit_player(self):
         """Edita o nome do jogador convidado selecionado."""
         if self.selected_player and self.new_name.strip():
             player_index = self.invited_players.index(self.selected_player)
-            self.invited_players[player_index] = self.new_name.strip()  # Atualiza o nome do jogador
-            self.new_name = ''  # Limpa o campo de entrada
+            self.invited_players[player_index] = self.new_name.strip()
+            self.game.players = self.invited_players[:]  # Atualiza a lista de jogadores ativos no jogo
+            self.new_name = ''
+            self.selected_player = None  # Reseta o jogador após edição
+            self.is_editing = False  # Sai do modo de edição
 
     def remove_player(self, player):
         """Remove o jogador convidado da lista temporária."""
         if player in self.invited_players:
             self.invited_players.remove(player)
+            self.game.players = self.invited_players[:]  # Atualiza a lista de jogadores ativos no jogo
 
     def check_remove_click(self, pos):
         """Verifica se o jogador clicou no 'X' para remover um jogador."""
@@ -159,7 +185,7 @@ class GroupEditScreen:
             y = y_start + (i // 5) * row_height
             if pygame.Rect(x, y, 20, 20).collidepoint(pos):
                 self.remove_player(player)
-                break  # Sai do loop após remover o jogador
+                break
 
     def check_select_click(self, pos):
         """Verifica se o jogador clicou no nome de um jogador para editar."""
@@ -175,16 +201,27 @@ class GroupEditScreen:
                 self.selected_player = player
                 self.new_name = player  # Preenche o campo de edição com o nome atual
 
+    def start_game(self):
+        """Inicia o jogo após adicionar jogadores."""
+        if self.invited_players:
+            if not self.game.selected_category:
+                self.game.show_choose_theme()  # Mostra a tela de seleção de temas se nenhuma categoria foi selecionada
+            else:
+                self.game.show_player_words(self.invited_players)  # Mostra a lista de jogadores para palavras ou impostor
+        else:
+            print("Adicione jogadores para iniciar o jogo.")
+
+
     def draw_players_matrix(self):
-        """Desenha os jogadores convidados em formato de matriz 5x5, com 'X' para remover."""
+        """Desenha os jogadores convidados em formato de matriz 5x5."""
         x_start = self.screen.get_width() / 10
         y_start = 200
         row_height = 40
         col_width = self.screen.get_width() / 5
 
         for i, player in enumerate(self.invited_players):
-            x = x_start + (i % 5) * col_width  # Alterna entre cinco colunas
-            y = y_start + (i // 5) * row_height  # Avança a cada cinco colunas
+            x = x_start + (i % 5) * col_width
+            y = y_start + (i // 5) * row_height
             self.game.draw_text(player, x, y, font_size=24, color=WHITE)
 
             # Desenha o "X" de remoção ao lado do nome
