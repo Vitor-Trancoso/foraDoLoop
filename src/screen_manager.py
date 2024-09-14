@@ -1,3 +1,4 @@
+# screen_manager.py
 import pygame
 from .screens.login_screen import LoginScreen
 from .screens.register_screen import RegisterScreen
@@ -10,6 +11,7 @@ from .screens.group_edit_screen import GroupEditScreen  # Tela de edição de gr
 from .screens.question_screen import QuestionScreen
 from .screens.voting_screen import VotingScreen
 from .screens.player_word_screen import PlayerWordScreen
+from .screens.recover_code_screen import RecoverCodeScreen  # Adicione esta linha
 
 class ScreenManager:
     def __init__(self, game):
@@ -63,3 +65,8 @@ class ScreenManager:
     def draw(self):
         if self.current_screen:
             self.current_screen.draw()
+
+    def show_recover_code_screen(self):
+            """Mostra a tela de recuperação de código."""
+            self.current_screen = RecoverCodeScreen(self.game)
+

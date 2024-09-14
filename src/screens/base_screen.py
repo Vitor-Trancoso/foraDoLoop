@@ -1,4 +1,4 @@
-# admin_screen.py
+# base_screen.py
 
 import pygame
 from ..ui import Button

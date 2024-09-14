@@ -1,3 +1,4 @@
+# ui.py
 import pygame
 
 BLACK = (0, 0, 0)
@@ -31,6 +32,16 @@ class Button:
         draw_rounded_rect(screen, self.rect, self.current_color, self.corner_radius, self.border_width, self.border_color)
         text_surf = self.font.render(self.text, True, BLACK)
         text_rect = text_surf.get_rect(center=self.rect.center)
+        screen.blit(text_surf, text_rect)
+
+        # Reduza o tamanho da fonte, se necessário, ou aumente a largura do botão
+        text_surf = self.font.render(self.text, True, BLACK)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        
+        # Verifique se o texto cabe dentro do botão, se não ajustar a fonte ou a largura do botão
+        if text_rect.width > self.rect.width - 10:  # Subtrair para garantir espaço de preenchimento
+            self.font = pygame.font.Font(None, 30)  # Reduzir o tamanho da fonte
+        
         screen.blit(text_surf, text_rect)
 
     def check_for_hover(self, mouse_pos):
