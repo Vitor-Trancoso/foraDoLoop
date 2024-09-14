@@ -160,22 +160,34 @@ class GroupEditScreen:
             pygame.draw.rect(self.screen, BLACK, (cursor_x, cursor_y, 2, self.font.get_height()))
 
     def draw_players_matrix(self):
-        """Desenha os jogadores convidados em formato de matriz e cria hitboxes."""
+        """Desenha os jogadores convidados em formato de matriz com hitboxes arredondadas e espaçamento ajustado."""
         x_start = self.screen.get_width() / 10
         y_start = 200
-        row_height = 40
-        col_width = self.screen.get_width() / 5
-
+        row_height = 50  # Aumenta o espaçamento entre as linhas
+        col_width = self.screen.get_width() / 5 + 20  # Aumenta o espaçamento entre as colunas
+        hitbox_padding = 15  # Define um padding para a hitbox
+        border_radius = 15  # Arredondamento das bordas da hitbox
+        dark_blue = (0, 51, 102)  # Cor azul escuro para a borda
+    
         self.player_hitboxes = []  # Limpa as hitboxes antes de desenhar novamente
-
+    
         for i, player in enumerate(self.invited_players):
+            # Calcula a posição do jogador
             x = x_start + (i % 5) * col_width
             y = y_start + (i // 5) * row_height
-            player_rect = pygame.Rect(x - 10, y - 10, col_width, row_height)  # Cria uma hitbox ao redor do nome
-            pygame.draw.rect(self.screen, BLUE_GRAY, player_rect, 2)  # Desenha o contorno (hitbox)
+            
+            # Define o retângulo da hitbox com espaçamento e padding
+            player_rect = pygame.Rect(x - hitbox_padding, y - hitbox_padding, col_width - hitbox_padding, row_height - hitbox_padding)
+            
+            # Desenha o contorno da hitbox com bordas arredondadas e cor azul escura
+            pygame.draw.rect(self.screen, dark_blue, player_rect, width=2, border_radius=border_radius)
+            
+            # Desenha o nome do jogador dentro da hitbox
             self.game.draw_text(player, x, y, font_size=24, color=WHITE)
+    
+            # Armazena a hitbox para detectar cliques
+            self.player_hitboxes.append(player_rect)
 
-            self.player_hitboxes.append(player_rect)  # Armazena a hitbox do jogador
 
     def draw_gradient_background(self, color_top, color_bottom):
         """Desenha um gradiente vertical de cima para baixo."""
